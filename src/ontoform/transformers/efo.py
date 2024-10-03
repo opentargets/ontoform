@@ -175,3 +175,7 @@ def transform(src: Path, dst: Path) -> None:
 
     # write the result
     n4.write_ndjson(dst)
+
+    # generate and write diseases file
+    diseases_dst = dst.parent / f'{dst.stem}_diseases.jsonl'
+    n4['id', 'label', 'parents'].rename({'label': 'name', 'parents': 'parentIds'}).write_ndjson(diseases_dst)

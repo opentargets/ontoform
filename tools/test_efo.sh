@@ -20,7 +20,8 @@ uv run ontoform efo ./input/efo_otar_slim.json ./output/efo_otar_slim_ontoform.j
 
 # drop definitions, we already know they will be different
 # and the definition alternatives, which are not there in the ontoform output
-jq -c 'del(.definition)|del(.definition_alternatives)' ./input/efo_otar_slim_oldpis.jsonl | sort > ./output/oldpis_nodef.jsonl
+# also, sort rows
+jq -c 'del(.definition)|del(.definition_alternatives)' ./input/ontology_efo-oldpis.jsonl | sort > ./output/oldpis_nodef.jsonl
 jq -c 'del(.definition)|del(.definition_alternatives)' ./output/efo_otar_slim_ontoform.jsonl | sort > ./output/ontoform_nodef.jsonl
 
 # sort the arrays
@@ -39,4 +40,16 @@ jq -c "del(.. | select(. == []))" ./output/oldpis_nodef_trim_sort.jsonl > ./outp
 jq -c "del(.. | select(. == []))" ./output/ontoform_nodef_trim_sort_nonulls.jsonl > ./output/ontoform_nodef_trim_sort_nonulls_noempty.jsonl
 
 # compare the outputs
-diff --color ./output/oldpis_nodef_trim_sort_noempty.jsonl ./output/ontoform_nodef_trim_sort_nonulls_noempty.jsonl
+diff --color ./output/oldpis_nodef_trim_sort_noempty.jsonl ./output/ontoform_nodef_trim_sort_nonulls_noempty.jsonl || :
+
+# disease file comparison
+# sort diseases object keys and rows
+jq -s "." ./input/diseases_efo-oldpis.jsonl | jq --sort-keys "." | jq -c ".[]" | sort > ./output/oldpis_diseases_sort.jsonl
+jq -s "." ./output/efo_otar_slim_ontoform_diseases.jsonl | jq --sort-keys "." | jq -c ".[]" | sort > ./output/efo_otar_slim_ontoform_diseases_sort.jsonl
+
+# sort the arrays
+jq -cf ../../tools/diff.jq ./output/oldpis_diseases_sort.jsonl > ./output/oldpis_diseases_sort_arrays.jsonl
+jq -cf ../../tools/diff.jq ./output/efo_otar_slim_ontoform_diseases_sort.jsonl > ./output/efo_otar_slim_ontoform_diseases_sort_arrays.jsonl
+
+# compare the outputs
+diff --color ./output/oldpis_diseases_sort_arrays.jsonl ./output/efo_otar_slim_ontoform_diseases_sort_arrays.jsonl || :

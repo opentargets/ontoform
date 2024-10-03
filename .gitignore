@@ -1,3 +1,5 @@
 .venv
 output
 __pycache__
+
+examples/efo_otar_slim/input/efo_otar_slim.json
