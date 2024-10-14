@@ -100,28 +100,24 @@ def transform(src: Path, dst: Path) -> None:
             .agg(pl.col('val').unique())
             .pivot(values='val', index='id', columns='pred', aggregate_function='first')
         )
-        .with_columns([pl.col(col).fill_null([]) for col in synonym_columns])
-        .with_columns(
-            synonyms=pl.struct(
-                hasExactSynonym=pl.col('hasExactSynonym'),
-                hasRelatedSynonym=pl.col('hasRelatedSynonym'),
-                hasNarrowSynonym=pl.col('hasNarrowSynonym'),
-                hasBroadSynonym=pl.col('hasBroadSynonym'),
-            )
-        )
-        .select(['id', 'synonyms'])
     )
     nodes_with_synonyms = cleaned_node_list.drop('synonyms').join(synonyms_list, on='id', how='left')
-
+    
     # compute obsolete related entities
-    # properties = (
-    #     node_list
-    #     .unnest('meta')
-    #     .explode('basicPropertyValues')
-    #     .unnest('basicPropertyValues')
-    #     .select(['id', 'val', 'pred'])
-    #     .with_columns('pred', pl.col('pred'))
-    # )
+    properties = (
+        node_list
+        .with_columns(
+            id=''+pl.col('id').str.split('/').list.last().str.replace('_', ':'))
+        .unnest('meta')
+        .explode('basicPropertyValues')
+        .unnest('basicPropertyValues')
+        .select(['id', 'val', 'pred'])
+        .with_columns(pred=pl.col('pred').str.split('#').list.last())
+        .with_columns(pl.when(pl.col('pred').str.contains('/')).then(pl.col('pred').str.split("/").list.last()).otherwise(pl.col('pred')).alias('pred'))
+        # .pivot(values='val', index='id', columns='pred', aggregate_function='first')
+    )
+    
+    properties.write_ndjson('/home/ricardo/Documents/work-files/pis/props.json')
     
     # merge the properties with the nodes
     
