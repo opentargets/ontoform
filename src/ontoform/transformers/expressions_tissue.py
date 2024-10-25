@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import polars as pl
-import polars.selectors as cs
 
 def transform(src: Path, dst: Path) -> None:
     
