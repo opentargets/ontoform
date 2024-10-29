@@ -48,5 +48,10 @@ def transform(src: Path, dst: Path) -> None:
         pl.col('type') == 'CLASS',
     )
     
+    output = node_list.filter(pl.col('id').str.contains('SO_')).select(
+      id=pl.col('id').str.split('/').list.last().str.replace('_', ':'), 
+      label=pl.col('lbl')
+    )
+    
     # write the result
-    node_list.write_ndjson(dst)
+    output.write_ndjson(dst)
