@@ -171,9 +171,6 @@ def transform(src: BinaryIO, dst: BinaryIO) -> None:
         .agg(*[pl.col(col).first() for col in agg_columns], pl.col('obsoleteTerms'))
     ).with_columns(obsoleteTerms=pl.col('obsoleteTerms').list.eval(pl.element().str.split('/').list.last()))
 
-    # write the result
-    n4.write_ndjson(dst)
-
     # # generate and write diseases file
-    # diseases_dst = dst.parent / f'{dst.stem}_diseases.jsonl'
-    # n4['id', 'label', 'parents'].rename({'label': 'name', 'parents': 'parentIds'}).write_ndjson(diseases_dst)
+    n5 = n4['id', 'label', 'parents'].rename({'label': 'name', 'parents': 'parentIds'})
+    n5.write_ndjson(dst)

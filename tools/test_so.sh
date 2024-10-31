@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script is meant to be run from the root of the repository
-if [ ! -d ./examples/efo_otar_slim ]; then
+if [ ! -d ./examples/so ]; then
     echo "Please run this script from the root of the repository (like: ./tests/$(basename "$0"))"
     exit 1
 fi
@@ -21,11 +21,11 @@ uv run ontoform so ./input/so.json ./output/so.jsonl
 # drop definitions, we already know they will be different
 # and the definition alternatives, which are not there in the ontoform output
 # also, sort rows
-jq -c '{id:.id,label:.label}' ./input/so-oldpis.json | sort > ./output/so-oldpis.jsonl
+jq -c '{id:.id,label:.label}' ./input/so-oldpis.jsonl | sort > ./output/so-oldpis_sort.jsonl
 
 # sort the object keys
-jq -s "." ./output/so-oldpis.jsonl | jq --sort-keys "." | jq -c ".[]" > ./output/so-oldpis_sort.jsonl
-jq -s "." ./output/so.jsonl | jq --sort-keys "." | jq -c ".[]" | sort > ./output/so_sort.jsonl
+jq -s "." ./output/so-oldpis_sort.jsonl | jq --sort-keys "." | jq -c ".[]" > ./output/so-oldpis_sort_keys.jsonl
+jq -s "." ./output/so.jsonl | jq --sort-keys "." | jq -c ".[]" | sort > ./output/so_keys.jsonl
 
 # compare the outputs
-diff --color ./output/so-oldpis_sort.jsonl ./output/so_sort.jsonl
+diff --color ./output/so-oldpis_sort_keys.jsonl ./output/so_keys.jsonl
