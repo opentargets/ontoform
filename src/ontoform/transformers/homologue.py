@@ -1,21 +1,35 @@
+import json
+import subprocess
 from pathlib import Path
 
 import polars as pl
 
-def transform(src: Path, dst: Path) -> None:
-    # load the homologues
-    initial = pl.read_json(src)
 
-    # prepare node data
-    inputGenes = pl.DataFrame(
-        initial['genes']
+def transform(src: Path, dst: Path) -> None:
+    jq_command = '.genes | {"genes": map({id: .id, name: .name})}'
+
+    # Ejecuta jq con subprocess
+    result = subprocess.run(
+        ['jq', jq_command, src],
+        capture_output=True,
+        text=True
     )
 
-    # extract genes list
-    genes_list = inputGenes.explode('genes').unnest('genes')
+    # Verifica si el comando se ejecutó correctamente
+    if result.returncode == 0:
+        # Carga la salida JSON como un objeto de Python
+        output = json.loads(result.stdout)
 
-    # read id and name
-    output = genes_list.select(["id","name"])
+        # Crea un DataFrame de Polars a partir de la salida JSON
+        input_genes = pl.DataFrame(output, strict=False,infer_schema_length=3)
 
-    # write the result
-    output.write_ndjson(dst)
+        # prepare node data
+
+        # extract genes list
+        genes_list = input_genes.unnest('genes')
+
+        # # read id and name
+        output = genes_list.select(['id', 'name'])
+
+        # # write the result
+        output.write_csv(dst, separator='\t', include_header=True)
