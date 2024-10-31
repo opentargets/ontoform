@@ -21,7 +21,7 @@ def transform(src: Path, dst: Path) -> None:
         output = json.loads(result.stdout)
 
         # Crea un DataFrame de Polars a partir de la salida JSON
-        input_genes = pl.DataFrame(output, strict=False,infer_schema_length=3)
+        input_genes = pl.DataFrame(output, strict=False, infer_schema_length=3)
 
         # prepare node data
 
