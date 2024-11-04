@@ -3,9 +3,14 @@ from collections.abc import Callable
 from importlib.metadata import version
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
+from typing import BinaryIO
 
 import typer
 from loguru import logger
+
+from ontoform.storage import get_storage
+
+work_dir = Path(os.path.abspath(__file__)).parent
 
 app = typer.Typer(
     add_completion=False,
@@ -31,12 +36,16 @@ def import_transformers() -> dict[str, Callable[[Path, Path], None]]:
     return transformers
 
 
-def run_transformer(transformer: Callable[[Path, Path], None]) -> Callable[[Path, Path, typer.Context], None]:
-    def run(src: Path, dst: Path, ctx: typer.Context) -> None:
+def run_transformer(transformer: Callable[[BinaryIO, BinaryIO], None]) -> Callable[[Path, Path, typer.Context], None]:
+    def run(src_path: str, dst_path: str, ctx: typer.Context) -> None:
         logger.info(f'running transformer {ctx.command.name}')
-        logger.debug(f'source file: {src}')
-        logger.debug(f'destination file: {dst}')
-        transformer(src, dst)
+        logger.debug(f'source: {src_path}')
+        logger.debug(f'destination: {dst_path}')
+
+        s = get_storage(src_path)
+
+        with s.read(src_path) as src, s.write(dst_path) as dst:
+            transformer(src, dst)
 
     return run
 

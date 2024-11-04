@@ -24,6 +24,4 @@ def transform(src: Path, dst: Path) -> None:
     )
 
     # write the result
-    n1.write_ndjson(
-        dst,
-    )
+    n1.write_ndjson(dst)
