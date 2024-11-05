@@ -25,13 +25,9 @@ def transform(src: BinaryIO, dst: BinaryIO) -> None:
     # Verifica si el comando se ejecutó correctamente
     if result.returncode == 0:
         output = json.loads(result.stdout)
-
         input_genes = pl.DataFrame(output, strict=False, infer_schema_length=3)
-
         # extract genes list
         genes_list = input_genes.unnest('genes')
-
         # # read id and name
         output = genes_list.select(['id', 'name'])
-
         output.write_csv(dst, separator='\t', include_header=True)
