@@ -16,7 +16,7 @@ mkdir -p ./output
 curl -Ls https://github.com/EBISPOT/efo/releases/download/v3.70.0/efo_otar_slim.json > ./input/efo_otar_slim.json
 
 # run the transformation
-uv run ontoform efo ./input/efo_otar_slim.json ./output/ontoform-disease.jsonl
+uv run ontoform disease ./input/efo_otar_slim.json ./output/ontoform-disease.jsonl --format ndjson
 
 # sort rows
 sort < ./input/oldetl-disease.jsonl    > ./output/oldetl-disease-sort.jsonl

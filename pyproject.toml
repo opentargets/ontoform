@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-ontoform = "ontoform:main.main"
+ontoform = "ontoform.main:main"
 
 [build-system]
 requires = ["hatchling"]
