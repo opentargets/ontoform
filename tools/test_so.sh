@@ -16,7 +16,7 @@ mkdir -p ./output
 curl -Ls https://raw.githubusercontent.com/The-Sequence-Ontology/SO-Ontologies/refs/heads/master/Ontology_Files/so.json > ./input/so.json
 
 # run the transformation
-uv run ontoform so ./input/so.json ./output/so.jsonl
+uv run ontoform so ./input/so.json ./output/so.jsonl --format ndjson
 
 # drop definitions, we already know they will be different
 # and the definition alternatives, which are not there in the ontoform output
