@@ -1,50 +1,24 @@
-from pathlib import Path
+from typing import BinaryIO
 
 import polars as pl
 
-schema = pl.Schema(
-    {
-        'id': pl.String(),
-        'lbl': pl.String(),
-        'meta': pl.Struct(
-            {
-                'basicPropertyValues': pl.List(pl.Struct({'pred': pl.String(), 'val': pl.String()})),
-                'comments': pl.List(pl.String()),
-                'definition': pl.Struct({'val': pl.String(), 'xrefs': pl.List(pl.String())}),
-                'deprecated': pl.Boolean(),
-                'subsets': pl.List(pl.String()),
-                'synonyms': pl.List(
-                    pl.Struct(
-                        {
-                            'pred': pl.String(),
-                            'synonymType': pl.String(),
-                            'val': pl.String(),
-                            'xrefs': pl.List(pl.String()),
-                        }
-                    )
-                ),
-                'xrefs': pl.List(pl.Struct({'val': pl.String()})),
-            }
-        ),
-        'type': pl.String(),
-    }
-)
+from ontoform.util import SupportedFormats, ontology_schema, write_dst
 
 
-def transform(src: Path, dst: Path) -> None:
-    # Reads the so owl file
+def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
+    # Reads the so ontology
     initial = pl.read_json(src)
 
     # prepare node data
     node_list = pl.DataFrame(
         initial['graphs'][0][0]['nodes'],
+        schema=ontology_schema,
         strict=False,
-        schema=schema,
     ).filter(
         pl.col('type') == 'CLASS',
     )
 
-    # filter out non SO terms and terms without labels. Then select the id and label columns
+    # filter out non so terms and terms without labels, then select the id and label columns
     output = node_list.filter(
         pl.col('id').str.contains('SO_'),
         pl.col('lbl').is_not_null(),
@@ -54,4 +28,4 @@ def transform(src: Path, dst: Path) -> None:
     )
 
     # write the result
-    output.write_ndjson(dst)
+    write_dst(output, dst, format)

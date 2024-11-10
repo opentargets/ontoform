@@ -2,61 +2,7 @@ from typing import BinaryIO
 
 import polars as pl
 
-from ontoform.util import SupportedFormats, write_dst
-
-schema = pl.Schema(
-    {
-        'id': pl.String(),
-        'lbl': pl.String(),
-        'meta': pl.Struct(
-            {
-                'basicPropertyValues': pl.List(
-                    pl.Struct(
-                        {
-                            'pred': pl.String(),
-                            'val': pl.String(),
-                        }
-                    )
-                ),
-                'comments': pl.List(
-                    pl.String(),
-                ),
-                'definition': pl.Struct(
-                    {
-                        'val': pl.String(),
-                        'xrefs': pl.List(
-                            pl.String(),
-                        ),
-                    }
-                ),
-                'deprecated': pl.Boolean(),
-                'subsets': pl.List(
-                    pl.String(),
-                ),
-                'synonyms': pl.List(
-                    pl.Struct(
-                        {
-                            'pred': pl.String(),
-                            'synonymType': pl.String(),
-                            'val': pl.String(),
-                            'xrefs': pl.List(
-                                pl.String(),
-                            ),
-                        },
-                    ),
-                ),
-                'xrefs': pl.List(
-                    pl.Struct(
-                        {
-                            'val': pl.String(),
-                        }
-                    )
-                ),
-            }
-        ),
-        'type': pl.String(),
-    }
-)
+from ontoform.util import SupportedFormats, ontology_schema, write_dst
 
 
 def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
@@ -64,7 +10,11 @@ def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
     initial = pl.read_json(src)
 
     # prepare dataframes
-    n = pl.DataFrame(initial['graphs'][0][0]['nodes'], strict=False, schema=schema)
+    n = pl.DataFrame(
+        initial['graphs'][0][0]['nodes'],
+        schema=ontology_schema,
+        strict=False,
+    )
     e = pl.DataFrame(initial['graphs'][0][0]['edges'])
 
     # clean the nodes
@@ -175,7 +125,7 @@ def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
     # 4. group all ancestors by id
     # 5. get therapeutic area ancestors by filtering the ancestors that are therapeutic areas
     # 6. create self references for therapeutic areas (they are their own ancestors)
-    # 7. group 6 and 7
+    # 7. group 5 and 6
     # 8. join both ancestors and therapeutic areas with the original dataframe
     direct_relationships = (
         n_children.select(['id', 'parents'])

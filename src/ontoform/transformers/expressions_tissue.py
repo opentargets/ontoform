@@ -1,23 +1,25 @@
-from pathlib import Path
+from typing import BinaryIO
 
 import polars as pl
 
-def transform(src: Path, dst: Path) -> None:
-    
+from ontoform.util import SupportedFormats
+
+
+def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
     # load the tissue expressions
     initial = pl.read_json(src).unnest('tissues')
-    
-    # Get all the column names
+
+    # get all the column names
     columns = initial.columns
-    
-    # Create a list of dataframes from the json values and the tissue_id
-    tissue_list = [initial
-                   .select(tissue=pl.col(column))
-                   .unnest('tissue')
-                   .with_columns(tissue_id=pl.lit(column)) for column in columns]
-    
-    # Concatenate the list of dataframes
+
+    # create a list of dataframes from the json values and the tissue_id
+    tissue_list = [
+        initial.select(tissue=pl.col(column)).unnest('tissue').with_columns(tissue_id=pl.lit(column))
+        for column in columns
+    ]
+
+    # concatenate the list of dataframes
     output = pl.concat(tissue_list)
-    
-    # Write the output to the destination
+
+    # write the output to the destination
     output.write_ndjson(dst)
