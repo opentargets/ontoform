@@ -2,8 +2,6 @@
 output
 __pycache__
 
-examples/efo/input/efo_otar_slim.json
 examples/disease/input/efo_otar_slim.json
-examples/efo_diseases/input/efo_otar_slim.json
-examples/hpo_phenotypes/input/phenotype.hpoa
+examples/homologue/input/homo_sapiens.json
 examples/so/input/so.json
