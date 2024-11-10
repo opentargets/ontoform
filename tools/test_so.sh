@@ -18,14 +18,20 @@ curl -Ls https://raw.githubusercontent.com/The-Sequence-Ontology/SO-Ontologies/r
 # run the transformation
 uv run ontoform so ./input/so.json ./output/so.jsonl --format ndjson
 
-# drop definitions, we already know they will be different
-# and the definition alternatives, which are not there in the ontoform output
-# also, sort rows
-jq -c '{id:.id,label:.label}' ./input/so-oldpis.jsonl | sort > ./output/so-oldpis_sort.jsonl
+# sort rows
+sort < ./input/oldpis-so.jsonl >./output/oldpis-so-sort.jsonl
+sort < ./output/so.jsonl > ./output/so-sort.jsonl
+
+# sort the arrays
+jq -cf ../../tools/diff.jq ./output/oldpis-so-sort.jsonl > ./output/oldpis-so-sort_keysort.jsonl
+jq -cf ../../tools/diff.jq ./output/so-sort.jsonl > ./output/so-sort_keysort.jsonl
 
 # sort the object keys
-jq -s "." ./output/so-oldpis_sort.jsonl | jq --sort-keys "." | jq -c ".[]" > ./output/so-oldpis_sort_keys.jsonl
-jq -s "." ./output/so.jsonl | jq --sort-keys "." | jq -c ".[]" | sort > ./output/so_keys.jsonl
+jq -s "." ./output/oldpis-so-sort_keysort.jsonl | jq --sort-keys "." | jq -c ".[]" > ./output/oldpis-so-sort_keysort_objsort.jsonl
+jq -s "." ./output/so-sort_keysort.jsonl | jq --sort-keys "." | jq -c ".[]" | sort > ./output/so-sort_keysort_objsort.jsonl
+
+# we only need id and label so let's drop everything else from the old pis output
+jq -c '{id, label}' ./output/oldpis-so-sort_keysort_objsort.jsonl > ./output/oldpis-so-sort_keysort_objsort_sel.jsonl
 
 # compare the outputs
-diff --color ./output/so-oldpis_sort_keys.jsonl ./output/so_keys.jsonl
+diff --color ./output/oldpis-so-sort_keysort_objsort_sel.jsonl ./output/so-sort_keysort_objsort.jsonl
