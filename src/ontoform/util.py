@@ -8,25 +8,33 @@ from loguru import logger
 
 
 class SupportedFormats(Enum):
-    PARQUET = 'parquet'
     NDJSON = 'ndjson'
+    PARQUET = 'parquet'
+    TSV = 'tsv'
 
 
-options = {
-    SupportedFormats.PARQUET: {'compression': 'zstd'},
+format_writers = {
+    SupportedFormats.NDJSON: 'write_ndjson',
+    SupportedFormats.PARQUET: 'write_parquet',
+    SupportedFormats.TSV: 'write_csv',
+}
+
+format_opts = {
     SupportedFormats.NDJSON: {},
+    SupportedFormats.PARQUET: {'compression': 'zstd'},
+    SupportedFormats.TSV: {'separator': '\t', 'include_header': False},
 }
 
 
 def write_dst(data: pl.DataFrame, dst: BinaryIO, format: SupportedFormats) -> None:
     write_func = None
     try:
-        write_func: Callable = getattr(data, f'write_{format.value}')
+        write_func: Callable = getattr(data, format_writers[format])
     except KeyError:
         logger.critical(f'unsupported format: {format}')
         sys.exit(1)
 
-    write_func(dst, **options[format])
+    write_func(dst, **format_opts[format])
 
 
 ontology_schema = pl.Schema(
