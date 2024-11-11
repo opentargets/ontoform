@@ -1,0 +1,67 @@
+name: Build docker image and publish to and GAR
+
+on:
+  release:
+    types:
+      - published
+    branches:
+      - main
+
+jobs:
+  push-to-gcr:
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+
+    env:
+      TAG: ${{ github.ref_name }}
+
+    steps:
+      - id: prepare-tag
+        name: Prepare tag
+        run: echo "TAG=$(echo $TAG | sed 's/^v//')" >> $GITHUB_ENV
+
+      - id: checkout
+        name: Check out repo
+        uses: actions/checkout@v4
+
+      - id: auth_google
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          project_id: 'open-targets-eu-dev'
+          workload_identity_provider: projects/426265110888/locations/global/workloadIdentityPools/github/providers/opentargets-github
+          service_account: ontoform-image-upload@open-targets-eu-dev.iam.gserviceaccount.com
+          access_token_lifetime: 300s
+
+      - id: auth_gar
+        name: Login to Google Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          registry: europe-west1-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth_google.outputs.access_token }}
+
+      - id: push
+        name: Build and push Docker image
+
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            europe-west1-docker.pkg.dev/open-targets-eu-dev/ontoform/ontoform:latest
+            europe-west1-docker.pkg.dev/open-targets-eu-dev/ontoform/ontoform:${{ env.TAG }}
+
+      - id: generate-attestations
+        name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: europe-west1-docker.pkg.dev/open-targets-eu-dev/ontoform/ontoform
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
