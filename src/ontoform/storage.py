@@ -79,7 +79,7 @@ class GoogleStorage(Storage):
         blob = self.bucket.blob(self.trim_path(path))
 
         try:
-            with blob.open('wb') as f:
+            with blob.open('wb', ignore_flush=True) as f:
                 yield f
         except OSError as e:
             logger.critical(f'failed opening file {path}')
