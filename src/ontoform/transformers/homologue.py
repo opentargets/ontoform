@@ -19,9 +19,9 @@ class FilteredJSONDecoder(json.JSONDecoder):
     https://github.com/pola-rs/polars/issues/17677
     """
 
-    def __init__(self, root_key='genes', allowed_keys=None, *args, **kwargs):
+    def __init__(self, root_key="genes", allowed_keys=None, *args, **kwargs):
         self.root_key = root_key
-        self.allowed_keys = allowed_keys or {'id', 'name'}
+        self.allowed_keys = allowed_keys or {"id", "name"}
         super().__init__(*args, **kwargs, object_hook=self.filter_keys)
 
     def filter_keys(self, obj: dict) -> dict:
@@ -33,9 +33,7 @@ class FilteredJSONDecoder(json.JSONDecoder):
 def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
     # load the homologues and delete the enormous dict from memory
     data = json.loads(src.read(), cls=FilteredJSONDecoder)
-    df = pl.from_dicts(data['genes'])
-    del data
+    df = pl.LazyFrame(data)
     gc.collect()
-
     # write the result
     write_dst(df, dst, format)
