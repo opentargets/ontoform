@@ -1,39 +1,25 @@
 import gc
-import json
-from typing import BinaryIO
+import ijson
+from typing import BinaryIO, Generator
 
 import polars as pl
 
 from ontoform.util import SupportedFormats, write_dst
 
 
-class FilteredJSONDecoder(json.JSONDecoder):
-    """JSON Decoder that filter keys in the JSON object.
-
-    This decoder calls a hook on each JSON object that filters out keys not in
-    allowed_keys set. It also processes the root_key, so we can get to the data.
-
-    This saves us a lot of memory and time, and serves as a workaround for the
-    bug in polars that causes it to crash when loading large JSON objects:
-
-    https://github.com/pola-rs/polars/issues/17677
-    """
-
-    def __init__(self, root_key='genes', allowed_keys=None, *args, **kwargs):
-        self.root_key = root_key
-        self.allowed_keys = allowed_keys or {'id', 'name'}
-        super().__init__(*args, **kwargs, object_hook=self.filter_keys)
-
-    def filter_keys(self, obj: dict) -> dict:
-        if self.root_key in obj:
-            return {self.root_key: obj[self.root_key]}
-        return {k: v for k, v in obj.items() if k in self.allowed_keys}
+def load_data(
+    src: bytes, root_key="genes", allowed_keys={"id", "name"}
+) -> Generator[dict, None, None]:
+    """generator to load the homologues from the source file"""
+    genes = ijson.items(src, f"{root_key}.item")
+    for gene in genes:
+        yield {k: gene[k] for k in allowed_keys if k in gene}
 
 
 def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
     # load the homologues and delete the enormous dict from memory
-    data = json.loads(src.read(), cls=FilteredJSONDecoder)
-    df = pl.from_dicts(data['genes'])
+    data = load_data(src.read())
+    df = pl.DataFrame(data)
     del data
     gc.collect()
 
