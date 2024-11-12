@@ -22,4 +22,4 @@ def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
     output = pl.concat(tissue_list)
 
     # write the output to the destination
-    write_dst(output, dst, SupportedFormats.PARQUET)
+    write_dst(output, dst, format)
