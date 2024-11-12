@@ -21,7 +21,7 @@ format_writers = {
 
 format_opts = {
     SupportedFormats.NDJSON: {},
-    SupportedFormats.PARQUET: {'compression': 'zstd'},
+    SupportedFormats.PARQUET: {'compression': 'gzip'},
     SupportedFormats.TSV: {'separator': '\t', 'include_header': False},
 }
 

@@ -2,7 +2,7 @@ from typing import BinaryIO
 
 import polars as pl
 
-from ontoform.util import SupportedFormats
+from ontoform.util import SupportedFormats, write_dst
 
 
 def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
@@ -22,4 +22,4 @@ def transform(src: BinaryIO, dst: BinaryIO, format: SupportedFormats) -> None:
     output = pl.concat(tissue_list)
 
     # write the output to the destination
-    output.write_ndjson(dst)
+    write_dst(output, dst, format)
