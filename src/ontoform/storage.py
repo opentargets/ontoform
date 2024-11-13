@@ -2,6 +2,7 @@ import sys
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from contextlib import contextmanager
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import BinaryIO
 
@@ -18,6 +19,18 @@ class Storage(ABC):
 
     @abstractmethod
     def write(self, path: str) -> Generator[BinaryIO, None, None]:
+        pass
+
+    @abstractmethod
+    def list(self, path: str, glob: str = '*') -> list[str]:
+        pass
+
+    @abstractmethod
+    def mkdir(self, path: str) -> None:
+        pass
+
+    @abstractmethod
+    def parent(self, path: str) -> str:
         pass
 
 
@@ -43,6 +56,16 @@ class LocalStorage(Storage):
     def write(self, path: str) -> Generator[BinaryIO, None, None]:
         with open(Path(path), 'wb') as f:
             yield f
+
+    def list(self, path: str, glob: str = '*') -> list[str]:
+        p = Path(path)
+        return [str(f) for f in p.glob(glob) if f.is_file()]
+
+    def mkdir(self, path: str) -> None:
+        Path(path).mkdir(parents=True, exist_ok=True)
+
+    def parent(self, path: str) -> str:
+        return Path(path).parent
 
 
 class GoogleStorage(Storage):
@@ -86,9 +109,26 @@ class GoogleStorage(Storage):
             logger.error(e)
             sys.exit(1)
 
+    def list(self, path: str, glob: str = '*') -> list[str]:
+        prefix = self.trim_path(path)
+        blobs = self.bucket.list_blobs(prefix=prefix)
+        return [f'gs://{self.bucket.name}/{blob.name}' for blob in blobs if fnmatch(blob.name, glob)]
+
+    def mkdir(self, path: str) -> None:
+        pass
+
+    def parent(self, path: str) -> str:
+        return path.rsplit('/', 1)[0]
+
 
 def get_storage(url: str) -> Storage:
     """Create a storage backend."""
     if url.startswith('gs://'):
         return GoogleStorage(url)
     return LocalStorage()
+
+
+def normalize_path(path: str) -> str:
+    if path.startswith('gs://'):
+        return path
+    return Path(path).absolute()

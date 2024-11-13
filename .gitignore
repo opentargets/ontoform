@@ -1,7 +1,2 @@
 .venv
-output
 __pycache__
-
-examples/disease/input/efo_otar_slim.json
-examples/homologue/input/homo_sapiens.json
-examples/so/input/so.json
