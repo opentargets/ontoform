@@ -1,3 +1,4 @@
+import sys
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from io import IOBase
@@ -109,4 +110,5 @@ class Step:
                 try:
                     future.result()
                 except Exception as e:
-                    logger.error(f'Failed to execute transformation for {transform.src_path}: {e}')
+                    logger.critical(f'Failed to execute transformation for {transform.src_path}: {e}')
+                    sys.exit(1)
