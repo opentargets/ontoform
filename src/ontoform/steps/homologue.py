@@ -6,9 +6,8 @@ homologue = Step(
     name='homologue',
     transformations=[
         GlobTransformation(
-            src_prefix='input/target-inputs/homologue/gene-dictionary',
-            dst_path=lambda p,
-            f: f'input/target-inputs/homologue/gene-dictionary-transformed/{p.rsplit("/")[-1]}'.replace(
+            src_prefix='input/target-inputs/homologue/gene_dictionary',
+            dst_path=lambda p, f: f'input/target-inputs/homologue/gene_dictionary/{p.rsplit("/")[-1]}'.replace(
                 '.json', f'.{extension(f)}'
             ),
             glob='**/*.json',

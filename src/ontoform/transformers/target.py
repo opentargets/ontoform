@@ -63,6 +63,8 @@ class EnsemblTransformer:
                 ]
             )
         )
+
+        logger.debug(f'transformation complete, writing file to {dst.name}')
         write_format(df, dst, output_format)
 
 
