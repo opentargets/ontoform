@@ -35,7 +35,7 @@ class EssentialityMatricesTransformer:
 
 class GeneIdentifiersTransformer:
     def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
-        df = pl.read_csv(src, separator='\t')
+        df = pl.read_csv(src)
         write_format(df, dst, output_format)
 
 
