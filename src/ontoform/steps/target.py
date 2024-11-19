@@ -14,7 +14,7 @@ target = Step(
     transformations=[
         FileTransformation(
             src_path='input/target-inputs/hpa/subcellular_location.tsv.zip',
-            dst_path=lambda _, f: f'input/target-inputs/hpa/subcellular_locations.{extension(f)}',
+            dst_path='input/target-inputs/hpa/subcellular_location.tsv.gz',
             transformer=SubcellularLocationTransformer,
         ),
         FileTransformation(

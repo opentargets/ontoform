@@ -19,10 +19,10 @@ class SubcellularLocationTransformer:
 
 
 class SubcellularLocationSSLTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
         # just change output format
         df = pl.read_csv(src, has_header=True, separator='\t')
-        write_format(df, dst, format)
+        write_format(df, dst, output_format)
 
 
 class EssentialityMatricesTransformer:
