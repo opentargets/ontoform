@@ -15,7 +15,7 @@ def remove_nulls_from_struct(s):
 class OpenFdaTransformer:
     def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
         with zipfile.ZipFile(src) as zip_file:
-            inner_filename = Path(src.name).stem
+            inner_filename = zip_file.infolist()[0].filename
             df = pl.read_json(zip_file.open(inner_filename), schema=schema)
 
             results = df.select('results').explode('results').unnest('results')

@@ -9,7 +9,7 @@ openfda = Step(
     transformations=[
         GlobTransformation(
             src_prefix='input/fda-inputs',
-            dst_path=lambda _, f: f'input/fda-inputs-transformed/{uuid4()}.{extension(f)}',
+            dst_path=lambda _, f: f'input/fda-inputs/{uuid4()}.{extension(f)}',
             glob='**/*.zip',
             transformer=OpenFdaTransformer,
         ),

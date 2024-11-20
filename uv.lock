@@ -253,7 +253,7 @@ wheels = [
 
 [[package]]
 name = "ontoform"
-version = "24.1.0a5"
+version = "24.1.0a7"
 source = { editable = "." }
 dependencies = [
     { name = "google-cloud-storage" },
