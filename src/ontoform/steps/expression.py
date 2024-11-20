@@ -7,12 +7,12 @@ expression = Step(
     transformations=[
         FileTransformation(
             src_path='input/expression-inputs/normal_tissue.tsv.zip',
-            dst_path='input/expression-inputs-transformed/normal_tissue.tsv.gz',
+            dst_path='input/expression-inputs/normal_tissue.tsv.gz',
             transformer=NormalTissueTransformer,
         ),
         FileTransformation(
             src_path='input/expression-inputs/map_with_efos.json',
-            dst_path=lambda _, f: f'input/expression-inputs-transformed/tissue-translation-map.{extension(f)}',
+            dst_path=lambda _, f: f'input/expression-inputs/tissue-translation-map.{extension(f)}',
             transformer=TissueTransformer,
         ),
     ],

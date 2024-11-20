@@ -1,2 +1,5 @@
 .venv
 __pycache__
+
+# input dir can be used for tests
+input
