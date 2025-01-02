@@ -3,7 +3,7 @@ from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from io import IOBase
 from multiprocessing import get_context
-from typing import Protocol
+from typing import Protocol, Self
 
 from loguru import logger
 
@@ -71,8 +71,7 @@ class GlobTransformation:
         for p in ss.list(src_path, self.glob):
             p_without_workdir = p.replace(f'{work_dir}/', '')
             t = FileTransformation(p_without_workdir, self.dst_path, self.transformer)
-            ts.append(t)
-
+            ts.append(t.prepare(work_dir, output_format))
         return ts
 
 
@@ -85,24 +84,25 @@ class Step:
         self.name = name
         self.transformations = transformations
 
-    def execute(
-        self,
-        work_dir: str,
-        output_format: Format = None,
-    ) -> None:
-        logger.info(f'running step {self.name}')
-
-        at = []
+    def prepare(self, work_dir: str, output_format: FileFormat) -> None:
+        # prepares all transformations and then extends or appends to the list
+        ts = []
         for t in self.transformations:
-            if isinstance(t, GlobTransformation):
-                at += t.explode(work_dir)
+            new_ts = t.prepare(work_dir, output_format)
+            if isinstance(new_ts, list):
+                ts.extend(new_ts)
             else:
-    def execute(self, work_dir: str, output_format: FileFormat = None) -> None:
+                ts.append(new_ts)
+        self.transformations = ts
 
-        logger.debug(f'executing {len(at)} transformations')
+    def execute(self, work_dir: str, output_format: FileFormat = None) -> None:
+        logger.info(f'running step {self.name}')
+        self.prepare(work_dir, output_format)
+
+        logger.debug(f'executing {len(self.transformations)} transformations')
 
         with ProcessPoolExecutor(max_workers=4, mp_context=get_context('spawn')) as executor:
-            future_to_transform = {executor.submit(t.execute): t for t in at}
+            future_to_transform = {executor.submit(t.execute): t for t in self.transformations}
 
             for future in as_completed(future_to_transform):
                 transform = future_to_transform[future]
