@@ -5,12 +5,12 @@ from typing import BinaryIO
 import polars as pl
 from loguru import logger
 
-from ontoform.format import Format, write_format
+from ontoform.file_format import FileFormat, write_format
 from ontoform.schemas.ensembl import schema
 
 
 class SubcellularLocationTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         logger.info(f'transforming to gzip, ignoring format argument {output_format.name}')
         with zipfile.ZipFile(src) as zip_file:
             with zip_file.open('subcellular_location.tsv') as file:
@@ -19,14 +19,14 @@ class SubcellularLocationTransformer:
 
 
 class SubcellularLocationSSLTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         # just change output format
         df = pl.read_csv(src, has_header=True, separator='\t')
         write_format(df, dst, output_format)
 
 
 class EssentialityMatricesTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         with zipfile.ZipFile(src) as zip_file:
             with zip_file.open('EssentialityMatrices/04_binaryDepScores.tsv') as file:
                 df = pl.read_csv(file, separator='\t')
@@ -34,13 +34,13 @@ class EssentialityMatricesTransformer:
 
 
 class GeneIdentifiersTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         df = pl.read_csv(src)
         write_format(df, dst, output_format)
 
 
 class EnsemblTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         df = (
             pl.read_json(src, schema=schema)
             .drop('id')
@@ -69,7 +69,7 @@ class EnsemblTransformer:
 
 
 class GnomadTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         logger.info(f'transforming to gzip, ignoring format argument {output_format.name}')
         with gzip.open(src) as file:
             with gzip.open(dst, 'wb') as gzip_file:

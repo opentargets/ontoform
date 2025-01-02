@@ -8,7 +8,7 @@ from typing import Annotated
 import typer
 from loguru import logger
 
-from ontoform.format import Format
+from ontoform.file_format import FileFormat
 from ontoform.model import Step
 from ontoform.storage import normalize_path
 
@@ -35,18 +35,18 @@ def create_command(step: Step) -> Callable:
     def wrapper(
         ctx: typer.Context,
         output_format: Annotated[
-            Format,
+            FileFormat,
             typer.Option(
                 '--output-format',
                 '-o',
                 help='Output format',
                 is_eager=True,
             ),
-        ] = Format.PARQUET.value,
+        ] = FileFormat.PARQUET.value,
     ) -> None:
         work_dir = ctx.obj.get('work_dir')
 
-        return step.execute(work_dir, Format(output_format))
+        return step.execute(work_dir, FileFormat(output_format))
 
     wrapper.__name__ = step.execute.__name__
     wrapper.__doc__ = step.execute.__doc__

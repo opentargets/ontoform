@@ -1,4 +1,4 @@
-from ontoform.format import extension
+from ontoform.file_format import stem
 from ontoform.model import FileTransformation, Step
 from ontoform.transformers.target import (
     EnsemblTransformer,
@@ -19,22 +19,22 @@ target = Step(
         ),
         FileTransformation(
             src_path='input/target-inputs/hpa/subcellular_locations_ssl.tsv',
-            dst_path=lambda _, f: f'input/target-inputs/hpa/subcellular_locations_ssl.{extension(f)}',
+            dst_path=lambda _, f: f'input/target-inputs/hpa/subcellular_locations_ssl.{stem(f)}',
             transformer=SubcellularLocationSSLTransformer,
         ),
         FileTransformation(
             src_path='input/target-inputs/project-scores/essentiality_matrices.zip',
-            dst_path=lambda _, f: f'input/target-inputs/project-scores/04_binaryDepScores.{extension(f)}',
+            dst_path=lambda _, f: f'input/target-inputs/project-scores/04_binaryDepScores.{stem(f)}',
             transformer=EssentialityMatricesTransformer,
         ),
         FileTransformation(
             src_path='input/target-inputs/project-scores/gene_identifiers_latest.csv.gz',
-            dst_path=lambda _, f: f'input/target-inputs/project-scores/gene_identifiers_latest.{extension(f)}',
+            dst_path=lambda _, f: f'input/target-inputs/project-scores/gene_identifiers_latest.{stem(f)}',
             transformer=GeneIdentifiersTransformer,
         ),
         FileTransformation(
             src_path='input/target-inputs/ensembl/homo_sapiens.json',
-            dst_path=lambda _, f: f'input/target-inputs/ensembl/homo_sapiens.{extension(f)}',
+            dst_path=lambda _, f: f'input/target-inputs/ensembl/homo_sapiens.{stem(f)}',
             transformer=EnsemblTransformer,
         ),
         FileTransformation(

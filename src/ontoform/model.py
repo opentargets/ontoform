@@ -7,26 +7,26 @@ from typing import Protocol
 
 from loguru import logger
 
-from ontoform.format import Format
+from ontoform.file_format import FileFormat
 from ontoform.storage import get_storage
 
 
 class Transformer(Protocol):
-    def transform(self, src: IOBase, dst: IOBase, output_format: Format) -> None: ...
+    def transform(self, src: IOBase, dst: IOBase, output_format: FileFormat) -> None: ...
 
 
 class FileTransformation:
     def __init__(
         self,
         src_path: str,
-        dst_path: str | Callable[[str, Format], str],
+        dst_path: str | Callable[[str, FileFormat], str],
         transformer: type[Transformer],
     ):
         self.src_path = src_path
         self.dst_path = dst_path
         self.transformer = transformer
 
-    def prepare(self, work_dir: str, output_format: Format) -> None:
+    def prepare(self, work_dir: str, output_format: FileFormat) -> Self:
         if callable(self.dst_path):
             self.dst_path = self.dst_path(self.src_path, output_format)
 
@@ -35,6 +35,7 @@ class FileTransformation:
         self.output_format = output_format
 
         logger.debug(f'prepared transformation from {self.src_path} to {self.dst_path}')
+        return self
 
     def execute(self) -> None:
         ss = get_storage(self.src_path)
@@ -61,7 +62,7 @@ class GlobTransformation:
         self.glob = glob
         self.transformer = transformer
 
-    def explode(self, work_dir: str) -> list[FileTransformation]:
+    def prepare(self, work_dir: str, output_format: FileFormat) -> list[FileTransformation]:
         src_path = f'{work_dir}/{self.src_prefix}'
         ss = get_storage(src_path)
         ts = []
@@ -96,9 +97,7 @@ class Step:
             if isinstance(t, GlobTransformation):
                 at += t.explode(work_dir)
             else:
-                at.append(t)
-        for t in at:
-            t.prepare(work_dir, output_format)
+    def execute(self, work_dir: str, output_format: FileFormat = None) -> None:
 
         logger.debug(f'executing {len(at)} transformations')
 

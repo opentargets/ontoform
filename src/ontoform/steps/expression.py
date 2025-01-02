@@ -1,4 +1,4 @@
-from ontoform.format import extension
+from ontoform.file_format import stem
 from ontoform.model import FileTransformation, Step
 from ontoform.transformers.expression import NormalTissueTransformer, TissueTransformer
 
@@ -12,7 +12,7 @@ expression = Step(
         ),
         FileTransformation(
             src_path='input/expression-inputs/map_with_efos.json',
-            dst_path=lambda _, f: f'input/expression-inputs/tissue-translation-map.{extension(f)}',
+            dst_path=lambda _, f: f'input/expression-inputs/tissue-translation-map.{stem(f)}',
             transformer=TissueTransformer,
         ),
     ],

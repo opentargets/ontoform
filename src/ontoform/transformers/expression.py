@@ -5,11 +5,11 @@ from typing import BinaryIO
 import polars as pl
 from loguru import logger
 
-from ontoform.format import Format, write_format
+from ontoform.file_format import FileFormat, write_format
 
 
 class NormalTissueTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         logger.info(f'transforming to gzip, ignoring format argument {output_format.name}')
         with zipfile.ZipFile(src) as zip_file:
             with zip_file.open('normal_tissue.tsv') as file:
@@ -18,7 +18,7 @@ class NormalTissueTransformer:
 
 
 class TissueTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         initial = pl.read_json(src).unnest('tissues')
 
         columns = initial.columns

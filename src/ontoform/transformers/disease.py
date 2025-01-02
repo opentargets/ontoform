@@ -2,12 +2,12 @@ from typing import BinaryIO
 
 import polars as pl
 
-from ontoform.format import Format, write_format
+from ontoform.file_format import FileFormat, write_format
 from ontoform.schemas.ontology import schema
 
 
 class DiseaseTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         # load the ontology
         initial = pl.read_json(src)
 

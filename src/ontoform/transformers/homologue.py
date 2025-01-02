@@ -4,7 +4,7 @@ from typing import BinaryIO
 
 import polars as pl
 
-from ontoform.format import Format, write_format
+from ontoform.file_format import FileFormat, write_format
 
 
 class FilteredJSONDecoder(json.JSONDecoder):
@@ -31,7 +31,7 @@ class FilteredJSONDecoder(json.JSONDecoder):
 
 
 class HomologueTransformer:
-    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: Format) -> None:
+    def transform(self, src: BinaryIO, dst: BinaryIO, output_format: FileFormat) -> None:
         # load the homologues, parse the json with our decoder, then delete from memory
         data = json.loads(src.read(), cls=FilteredJSONDecoder)
         df = pl.from_dicts(data['genes'])
