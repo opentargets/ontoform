@@ -1,15 +1,15 @@
 [project]
 name = "ontoform"
-version = "24.1.0-alpha.7"
+version = "25.0.0-rc.1"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-  "google-cloud-storage>=2.18.2",
-  "jq>=1.8.0",
-  "loguru>=0.7.2",
-  "polars>=1.14.0",
-  "typer>=0.13.0",
+  "google-cloud-storage==2.19.0",
+  "jq==1.8.0",
+  "loguru==0.7.3",
+  "polars==1.18.0",
+  "typer==0.15.1",
 ]
 
 [project.scripts]
@@ -20,16 +20,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.optional-dependencies]
-dev = ["ruff==0.7.4"]
+dev = ["ruff==0.8.5"]
+test = ["pytest==8.3.4"]
 
 [tool.ruff]
-target-version = 'py312'
+target-version = 'py313'
 line-length = 120
 
-[tool.ruff.format]
-quote-style = 'single'
-
-[tool.ruff.lint]
 preview = true
 
 select = [
@@ -90,8 +87,6 @@ ignore = [
   'B904',    # possibly useful but too noisy
   'COM812',  # trailing commas on multiline lists are nice, but we have 2.5k violations
   'PIE807',  # `lambda: []` is much clearer for `load_default` in schemas
-  'PT004',   # pretty weird + not a pytest convention: https://github.com/astral-sh/ruff/issues/8796
-  'PT005',   # ^ likewise
   'PT011',   # very noisy
   'PT015',   # nice for tests but not so nice elsewhere
   'PT018',   # ^ likewise
@@ -136,6 +131,9 @@ extend-safe-fixes = [
   'SIM110',  # ^ likewise
   'PERF102', # ^ likewise
 ]
+
+[tool.ruff.format]
+quote-style = 'single'
 
 [tool.ruff.lint.per-file-ignores]
 '**/__init__.py' = ['F401']

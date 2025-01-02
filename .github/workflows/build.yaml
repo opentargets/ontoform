@@ -1,4 +1,4 @@
-name: Build docker image and publish to and GAR
+name: Build docker image and publish to GHCR and GAR
 
 on:
   release:
@@ -8,8 +8,8 @@ on:
       - main
 
 jobs:
-  push-to-gcr:
-    runs-on: ubuntu-latest
+  push-to-ghcr-and-gar:
+    runs-on: ubuntu-22.04
 
     permissions:
       packages: write
@@ -28,6 +28,14 @@ jobs:
       - id: checkout
         name: Check out repo
         uses: actions/checkout@v4
+
+      - id: auth_ghcr
+        name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: auth_google
         name: Authenticate to Google Cloud
@@ -55,13 +63,15 @@ jobs:
           context: .
           push: true
           tags: |
-            europe-west1-docker.pkg.dev/open-targets-eu-dev/ontoform/ontoform:latest
-            europe-west1-docker.pkg.dev/open-targets-eu-dev/ontoform/ontoform:${{ env.TAG }}
+            ghcr.io/${{ github.repository }}/{{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}/{{ github.repository }}:${{ env.TAG }}
+            europe-west1-docker.pkg.dev/open-targets-eu-dev/{{ github.repository }}/{{ github.repository }}:latest
+            europe-west1-docker.pkg.dev/open-targets-eu-dev/{{ github.repository }}/{{ github.repository }}:${{ env.TAG }}
 
       - id: generate-attestations
         name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: europe-west1-docker.pkg.dev/open-targets-eu-dev/ontoform/ontoform
+          subject-name: ghcr.io/${{ github.repository }}/{{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
