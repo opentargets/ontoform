@@ -17,16 +17,13 @@ mkdir -p $work_dir/input/ontology-inputs
 # DiseaseTransformer —
 # input/ontology-inputs/efo_otar_slim.json -> output/disease/disease.parquet
 curl -Ls https://github.com/EBISPOT/efo/releases/download/v3.70.0/efo_otar_slim.json > $work_dir/input/ontology-inputs/efo_otar_slim.json
-# this takes a long time, because disease is split in 200 files :(
-if [ ! -f $work_dir/oldetl-disease.jsonl ]; then
-    for f in $(gsutil ls gs://open-targets-pre-data-releases/24.09dev/output/etl/json/diseases/); do gsutil cat "$f" >> $work_dir/oldetl-disease.jsonl; done
-fi
+gsutil cp gs://open-targets-pre-data-releases/24.09dev/output/oldetl_diseases.jsonl $work_dir/oldetl-disease.jsonl
 
 # run ontoform
 uv run ontoform --work-dir $work_dir disease --output-format ndjson
 
 # sort rows
-sort < ./tests/old_pis/disease.jsonl          > /tmp/oldetl-disease-sort.jsonl
+sort < $work_dir/oldetl-disease.jsonl         > /tmp/oldetl-disease-sort.jsonl
 sort < $work_dir/output/disease/disease.jsonl > /tmp/ontoform-disease-sort.jsonl
 
 # drop description, we already know they will be different

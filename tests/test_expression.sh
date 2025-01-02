@@ -28,11 +28,11 @@ uv run ontoform --work-dir /tmp expression --output-format ndjson
 
 # we cannot compare with the old pis output because we do not know about version
 # control in protein atlas so we cant get the same original file
-diff <(unzip -p $work_dir/input/expression-inputs/normal_tissue.tsv.zip normal_tissue.tsv) <(gzip -d $work_dir/input/expression-inputs-transformed/normal_tissue.tsv.gz -c)
+diff <(unzip -p $work_dir/input/expression-inputs/normal_tissue.tsv.zip normal_tissue.tsv) <(gzip -d $work_dir/input/expression-inputs/normal_tissue.tsv.gz -c)
 
 # sort rows
-sort < $work_dir/oldpis-tissue-translation-map.json                               > /tmp/oldpis-tissue-translation-map-sort.jsonl
-sort < $work_dir/input/expression-inputs-transformed/tissue-translation-map.jsonl > /tmp/ontoform-tissue-translation-map-sort.jsonl
+sort < $work_dir/oldpis-tissue-translation-map.json                   > /tmp/oldpis-tissue-translation-map-sort.jsonl
+sort < $work_dir/input/expression-inputs/tissue-translation-map.jsonl > /tmp/ontoform-tissue-translation-map-sort.jsonl
 
 # remove whitespace
 jq -c . /tmp/oldpis-tissue-translation-map-sort.jsonl   > /tmp/oldpis-tissue-translation-map-sort_nowhite.jsonl
