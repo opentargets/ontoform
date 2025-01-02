@@ -1,12 +1,12 @@
 import os
 import sys
+import tempfile
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from contextlib import contextmanager
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import BinaryIO
-from uuid import uuid4
 
 from google.cloud import storage
 from loguru import logger
@@ -101,28 +101,20 @@ class GoogleStorage(Storage):
     @contextmanager
     def write(self, path: str) -> Generator[BinaryIO, None, None]:
         # we need to write to a tempfile first, polars crashes when writing directly to a gcs blob
-        temp_path = os.getenv('TMPDIR', '.')
-        temp_filename = Path(temp_path) / str(uuid4())
-
+        temp_path = os.getenv('TMPDIR', None)
         try:
-            with open(temp_filename, 'wb') as f:
-                logger.debug(f'writing to tempfile {temp_filename}')
-                yield f
-        except OSError as e:
-            logger.critical(f'failed writing tempfile {temp_filename}')
-            logger.error(e)
-            sys.exit(1)
-
-        try:
-            with open(temp_filename, 'rb') as f:
+            with tempfile.NamedTemporaryFile(mode='w+b', dir=temp_path) as temp_file:
+                logger.debug(f'writing to tempfile {temp_file.name}')
+                yield temp_file
+                temp_file.flush()
+                temp_file.seek(0)
                 logger.debug(f'writing finished, writing to final path {path}')
                 blob = self.bucket.blob(self.trim_path(path))
-                blob.upload_from_file(f)
-        except OSError as e:
-            logger.critical(f'failed writing file {path}')
-            logger.error(e)
-
-        os.unlink(temp_filename)
+                blob.upload_from_file(temp_file)
+        except Exception as e:
+            logger.critical('Failed operation')
+            logger.exception(e)
+            sys.exit(1)
 
     def list(self, path: str, glob: str = '*') -> list[str]:
         prefix = self.trim_path(path)
