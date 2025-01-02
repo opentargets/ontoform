@@ -3,73 +3,84 @@ from collections.abc import Callable
 from importlib.metadata import version
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-from typing import Annotated, BinaryIO
+from typing import Annotated
 
 import typer
 from loguru import logger
 
-from ontoform.storage import get_storage
-from ontoform.util import SupportedFormats
-
-app = typer.Typer(
-    add_completion=False,
-    help='Preprocess input data for the Open Targets pipeline',
-)
+from ontoform.file_format import FileFormat
+from ontoform.model import Step
+from ontoform.storage import normalize_path
 
 
-def import_transformers() -> dict[str, Callable[[Path, Path], None]]:
-    transformers = {}
-    transformer_dir = Path(os.path.abspath(__file__)).parent / 'transformers'
+def load_steps() -> dict[str, Step]:
+    steps = {}
+    steps_dir = Path(os.path.abspath(__file__)).parent / 'steps'
 
-    for transformer_path in transformer_dir.glob('[!__]*.py'):
-        transformer_name = transformer_path.stem
-
-        logger.debug(f'loading transformer: {transformer_name}')
-
-        spec = spec_from_file_location(transformer_name, transformer_path)
+    for step_path in steps_dir.glob('[!__]*.py'):
+        step_name = step_path.stem
+        logger.debug(f'loading step: {step_name}')
+        spec = spec_from_file_location(step_name, step_path)
         module = module_from_spec(spec)
         spec.loader.exec_module(module)
-        transformers[transformer_name] = module.transform
+        steps[step_name] = getattr(module, step_name)
 
-    logger.info(f'available transformers: {", ".join(list(transformers.keys()))}')
-    return transformers
+    logger.info(f'available steps: {", ".join(list(steps.keys()))}')
+    return steps
 
 
-def run_transformer(
-    transformer: Callable[[BinaryIO, BinaryIO], None],
-) -> Callable[[Path, Path, typer.Context], None]:
-    def run(
-        src_path: str,
-        dst_path: str,
+def create_command(step: Step) -> Callable:
+    wrapper: Callable[..., None]
+
+    def wrapper(
+        ctx: typer.Context,
         output_format: Annotated[
-            SupportedFormats | None,
+            FileFormat,
             typer.Option(
-                '--format',
-                '-f',
+                '--output-format',
+                '-o',
                 help='Output format',
                 is_eager=True,
             ),
-        ] = SupportedFormats.PARQUET.value,
-        ctx: typer.Context = None,
+        ] = FileFormat.PARQUET.value,
     ) -> None:
-        logger.info(f'running transformer {ctx.command.name}')
-        logger.debug(f'output format: {output_format.value}')
-        logger.debug(f'source: {src_path}')
-        logger.debug(f'destination: {dst_path}')
+        work_dir = ctx.obj.get('work_dir')
 
-        s = get_storage(src_path)
+        return step.execute(work_dir, FileFormat(output_format))
 
-        with s.read(src_path) as src, s.write(dst_path) as dst:
-            transformer(src, dst, output_format)
+    wrapper.__name__ = step.execute.__name__
+    wrapper.__doc__ = step.execute.__doc__
+    return wrapper
 
-    return run
+
+def setup_app() -> typer.Typer:
+    app = typer.Typer(
+        add_completion=False,
+        help='Preprocess input data for the Open Targets pipeline',
+    )
+
+    @app.callback()
+    def main(
+        ctx: typer.Context,
+        work_dir: str = typer.Option(
+            ...,
+            '--work-dir',
+            '-w',
+            help='Working directory',
+            callback=normalize_path,
+        ),
+    ) -> None:
+        ctx.obj = {'work_dir': work_dir}
+
+    steps = load_steps()
+    for step_name, step in steps.items():
+        wrapped_step = create_command(step)
+        app.command(name=step_name)(wrapped_step)
+
+    return app
 
 
 def main():
     logger.info(f'starting ontoform v{version("ontoform")}')
-    transformers = import_transformers()
-
-    for name, transform in transformers.items():
-        app.command(name=name)(run_transformer(transform))
-
-    app()
+    app = setup_app()
+    app(obj={})
