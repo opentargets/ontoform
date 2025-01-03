@@ -21,7 +21,7 @@ jobs:
       TAG: ${{ github.ref_name }}
 
     steps:
-      - id: prepare-tag
+      - id: prepare_tag
         name: Prepare tag
         run: echo "TAG=$(echo $TAG | sed 's/^v//')" >> $GITHUB_ENV
 
@@ -57,21 +57,22 @@ jobs:
 
       - id: push
         name: Build and push Docker image
-
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          labels: |
+            org.opencontainers.image.description=${{ github.event.repository.description }}
           tags: |
-            ghcr.io/${{ github.repository }}/{{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}/{{ github.repository }}:${{ env.TAG }}
-            europe-west1-docker.pkg.dev/open-targets-eu-dev/{{ github.repository }}/{{ github.repository }}:latest
-            europe-west1-docker.pkg.dev/open-targets-eu-dev/{{ github.repository }}/{{ github.repository }}:${{ env.TAG }}
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ env.TAG }}
+            europe-west1-docker.pkg.dev/open-targets-eu-dev/ontoform/ontoform:latest
+            europe-west1-docker.pkg.dev/open-targets-eu-dev/ontoform/ontoform:${{ env.TAG }}
 
-      - id: generate-attestations
+      - id: generate_attestations
         name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ghcr.io/${{ github.repository }}/{{ github.repository }}
+          subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
