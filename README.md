@@ -1,6 +1,6 @@
 # ontoform
 
-Simple CLI tool that transforms ontologies into NDJSONs optimized for Open Targets pipeline.
+Simple CLI tool that transforms ontologies and other input data into The format used by the Open Targets pipeline.
 
 ## Running
 
@@ -18,13 +18,6 @@ uv run ontoform --help
 docker build -t ontoform .
 docker run ontoform --help
 ```
-
-## Tools
-
-The `./tools` folder contains some useful utilities:
-
-* `test_efo.sh`: A script to test the EFO output against old PIS.
-* `schema.jq`: A JQ script to generate a first draft of the schema of an ontology in JSON format.
 
 ## Copyright
 Copyright 2014-2024 EMBL - European Bioinformatics Institute, Genentech, GSK, MSD, Pfizer, Sanofi and Wellcome Sanger Institute

@@ -16,11 +16,11 @@ class Storage(ABC):
     """Abstract class for storage backends."""
 
     @abstractmethod
-    def read(self, path: str) -> Generator[BinaryIO, None, None]:
+    def read(self, path: str) -> Generator[BinaryIO]:
         pass
 
     @abstractmethod
-    def write(self, path: str) -> Generator[BinaryIO, None, None]:
+    def write(self, path: str) -> Generator[BinaryIO]:
         pass
 
     @abstractmethod
@@ -40,7 +40,7 @@ class LocalStorage(Storage):
     """Local storage backend."""
 
     @contextmanager
-    def read(self, path: str) -> Generator[BinaryIO, None, None]:
+    def read(self, path: str) -> Generator[BinaryIO]:
         p = Path(path)
         if not p.exists():
             logger.critical(f'file not found {path}')
@@ -55,7 +55,7 @@ class LocalStorage(Storage):
             sys.exit(1)
 
     @contextmanager
-    def write(self, path: str) -> Generator[BinaryIO, None, None]:
+    def write(self, path: str) -> Generator[BinaryIO]:
         with open(Path(path), 'wb') as f:
             yield f
 
@@ -82,7 +82,7 @@ class GoogleStorage(Storage):
         return path.replace('gs://', '').replace(self.bucket_name, '').lstrip('/')
 
     @contextmanager
-    def read(self, path: str) -> Generator[BinaryIO, None, None]:
+    def read(self, path: str) -> Generator[BinaryIO]:
         logger.debug(f'reading from {path}')
         blob = self.bucket.blob(self.trim_path(path))
 
@@ -99,7 +99,7 @@ class GoogleStorage(Storage):
             sys.exit(1)
 
     @contextmanager
-    def write(self, path: str) -> Generator[BinaryIO, None, None]:
+    def write(self, path: str) -> Generator[BinaryIO]:
         # we need to write to a tempfile first, polars crashes when writing directly to a gcs blob
         temp_path = os.getenv('TMPDIR', None)
         try:

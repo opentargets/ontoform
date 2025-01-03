@@ -1,16 +1,18 @@
 [project]
 name = "ontoform"
 version = "25.0.0-rc.1"
-description = "Add your description here"
+description = "Open Targets pipeline converter tool"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "google-cloud-storage==2.19.0",
-  "jq==1.8.0",
   "loguru==0.7.3",
   "polars==1.18.0",
   "typer==0.15.1",
 ]
+
+[dependency-groups]
+dev = ["coverage>=7.6.10", "deptry>=0.21.2", "pytest==8.3.4", "ruff>=0.8.5"]
 
 [project.scripts]
 ontoform = "ontoform.main:main"
@@ -19,16 +21,18 @@ ontoform = "ontoform.main:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[project.optional-dependencies]
-dev = ["ruff==0.8.5"]
-test = ["pytest==8.3.4"]
+[tool.pytest.ini_options]
+testpaths = ["tests/pis"]
 
 [tool.ruff]
 target-version = 'py313'
 line-length = 120
-
 preview = true
 
+[tool.ruff.format]
+quote-style = 'single'
+
+[tool.ruff.lint]
 select = [
   'E',      # pycodestyle
   'F',      # pyflakes
@@ -132,11 +136,12 @@ extend-safe-fixes = [
   'PERF102', # ^ likewise
 ]
 
-[tool.ruff.format]
-quote-style = 'single'
-
-[tool.ruff.lint.per-file-ignores]
-'**/__init__.py' = ['F401']
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+parametrize-names-type = 'tuple'
+parametrize-values-type = 'list'
+parametrize-values-row-type = 'tuple'
 
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = 'single'
@@ -144,9 +149,8 @@ multiline-quotes = 'double'
 docstring-quotes = 'double'
 avoid-escape = true
 
-[tool.ruff.lint.flake8-pytest-style]
-fixture-parentheses = false
-mark-parentheses = false
-parametrize-names-type = 'tuple'
-parametrize-values-type = 'list'
-parametrize-values-row-type = 'tuple'
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+'**/__init__.py' = ['F401']
