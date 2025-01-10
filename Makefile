@@ -24,4 +24,4 @@ test: .venv/bin/pytest  ## Run the tests
 	@uv run pytest
 
 coverage: .venv/bin/pytest  ## Generate and show coverage reports
-	@uv run coverage run -m pytest -qq; uv run coverage xml; uv run coverage report -m
+	@uv run coverage run -m pytest -qq && uv run coverage xml && uv run coverage report -m

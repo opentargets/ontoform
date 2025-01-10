@@ -1,5 +1,20 @@
-.venv
-__pycache__
+# Various python files
+__pycache__/
+dist/
+build/
+coverage.xml
+htmlcov
+*.egg-info/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+.cache
+.coverage
+
+# PyCharm files
+.idea
+.DS_Store
 
 # input dir can be used for tests
 input
