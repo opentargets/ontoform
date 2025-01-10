@@ -6,7 +6,7 @@ disease = Step(
     name='disease',
     transformations=[
         FileTransformation(
-            src_path='input/ontology-inputs/efo_otar_slim.json',
+            src_path='input/disease/efo_otar_slim.json',
             dst_path=lambda _, f: f'output/disease/disease.{stem(f)}',
             transformer=DiseaseTransformer,
         ),
