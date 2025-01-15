@@ -11,12 +11,12 @@ work_dir=/tmp
 # set up stuff
 set -x
 set -e
-mkdir -p $work_dir/input/ontology-inputs
+mkdir -p $work_dir/input/disease
 
 # get efo
 # DiseaseTransformer —
-# input/ontology-inputs/efo_otar_slim.json -> output/disease/disease.parquet
-curl -Ls https://github.com/EBISPOT/efo/releases/download/v3.70.0/efo_otar_slim.json > $work_dir/input/ontology-inputs/efo_otar_slim.json
+# input/disease/efo_otar_slim.json -> output/disease/disease.parquet
+curl -Ls https://github.com/EBISPOT/efo/releases/download/v3.70.0/efo_otar_slim.json > $work_dir/input/disease/efo_otar_slim.json
 gsutil cp gs://open-targets-pre-data-releases/24.09dev/output/oldetl_diseases.jsonl $work_dir/oldetl-disease.jsonl
 
 # run ontoform
