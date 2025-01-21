@@ -6,8 +6,8 @@ so = Step(
     name='so',
     transformations=[
         FileTransformation(
-            src_path='input/so-inputs/so.json',
-            dst_path=lambda _, f: f'input/so-inputs/so.{stem(f)}',
+            src_path='input/so/so.json',
+            dst_path=lambda _, f: f'intermediate/so/so.{stem(f)}',
             transformer=SOTransformer,
         ),
     ],
