@@ -1,3 +1,7 @@
+> [!NOTE]
+>
+> Ontoform is now deprecated in favour of [PTS](https://github.com/opentargets/pts). Development will continue there.
+
 # ontoform
 
 Simple CLI tool that transforms ontologies and other input data into The format used by the Open Targets pipeline.
